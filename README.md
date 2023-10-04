@@ -9,102 +9,32 @@
 
 FlameScope is a visualization tool for exploring different time ranges as Flame Graphs, allowing quick analysis of performance issues such as perturbations, variance, single-threaded execution, and more.
 
-FlameScope begins by displaying the input data as an interactive subsecond-offset heat map. This shows patterns in the data. You can then select a time range to highlight on different patterns, and a flame graph will be generated just for that time range.
+## Installation on Apple Silicon
 
-## Disclaimer
-
-FlameScope is in early stages of development and under constant change, so bugs and issues are expected. We count on your support to find and report them!
-
-## Installation / Instructions
-
-The quickest way to get started is to run the pre-built client bundle:
+The installation instructions in the main repository did not work on the M1 (neither Python, nor the frontend). For convenience, I built the frontend on a Linux machine and included them in this fork, so you don't have to worry about running `npm run webpack`. You just need to run the Python server. E2E, here's what it looks like:
 
 ```bash
-$ git clone https://github.com/Netflix/flamescope
-$ cd flamescope
-$ pip install -r requirements.txt
-$ python run.py
+git clone https://github.com/neilramaswamy/flamescope
+cd flamescope
+
+# Create a venv
+python3 -m venv env
+source ./env/bin/activate
+
+# Install libmagic
+brew install libmagic
+
+pip3 install -r requirements.txt
+python3 run.py
 ```
 
-(Note python3 is assumed, python2 _may_ work)
+I'd like to port some of this to the main-repo, but I don't have time. If you'd like to help, please feel free to upstream my changes.
 
-Then browse to http://127.0.0.1:5000/, and you can begin exploring profiles from the `examples` directory. You can add new profiles to that directory, collected using Linux `perf`. Here are instructions for a generic CPU profile at 49 Hertz for 120 seconds:
+Credits to the following thread for figuring this out:
 
-```bash
-$ sudo perf record -F 49 -a -g -- sleep 120
-$ sudo perf script --header > stacks.myproductionapp.2018-03-30_01
-$ gzip stacks.myproductionapp.2018-03-30_01	# optional
-```
+- https://github.com/Yelp/elastalert/issues/1927#issuecomment-549142662
 
-If you are profiling C++ code, you may want to pipe stacks through `c++filt` to get readable frames.
+## The rest of the README
 
-There are extra steps to fetch stacks correctly for some runtimes, depending on the runtime. For example, we've previously published Java steps in [Java in Flames](https://medium.com/netflix-techblog/java-in-flames-e763b3d32166): java needs to be running with the -XX:+PreserveFramePointer option, and [perf-map-agent](https://github.com/jvm-profiling-tools/perf-map-agent) must be run immediately after the `perf record` to dump a JIT symbol table in /tmp.
+Please see the [original repo](https://github.com/Netflix/flamescope) for the reset of the README.
 
-FlameScope can visualize any Linux `perf script` output that includes stack traces, including page faults, context switches, and other events. See the References section below for documentation.
-
-FlameScope is composed of two main components, the Python backend, and a React client interface. A pre-built client bundle is distributed with the backend, so the quickest way to get started is to install the Python requirements and start the application, as described earlier.
-
-Although not necessary, we **strongly** suggest using [virtualenv](https://github.com/pypa/virtualenv) to isolate your Python environment.
-
-By default, FlameScope will load a list of files from the `examples` directory, which includes a two profile examples.
-
-## Configuration Options
-
-FlameScope configuration file can be found in `app/config.py`.
-
-```python
-DEBUG = True # run the web server in debug mode
-PROFILE_DIR = 'examples' # path where flamescope will look for profiles
-HOST = '127.0.0.1' # web server host
-PORT = 5000 # web server port
-JSONIFY_PRETTYPRINT_REGULAR = False # pretty print api json responses
-```
-
-## Building Client from Source
-
-In order to build the client application from source, the following command line tools must be installed:
-
-- [Node.js/Npm](https://nodejs.org/en/download/)
-
-Once those tools are available, you will be able to install the project dependencies and generate a build.
-
-```bash
-$ npm install
-$ npm run webpack
-```
-
-The `npm run webpack` command will generate a new build under `app/public`. This directory is exposed by the Python web server.
-
-Webpack can also watch and recompile files whenever they change. To build and start the _watch_ task, run the following command:
-
-```bash
-$ npm run webpack-watch
-```
-
-## Building a Docker Image
-
-FlameScope provides a Dockerfile to build a Docker image:
-
-```bash
-$ cd flamescope
-$ docker build -t flamescope .
-```
-
-The container expects the profiles to be bind-mounted into `/profiles` and listens on port 5000. To view profiles from `/tmp/profiles`, start the container with the following command:
-
-```
-$ docker run --rm -it -v /tmp/profiles:/profiles:ro -p 5000:5000 flamescope
-```
-
-Then access FlameScope on [http://127.0.0.1:5000](http://127.0.0.1:5000/)
-
-## References
-
-- [FlameScope Introduction (video)](https://www.youtube.com/watch?v=cFuI8SAAvJg)
-- [FlameScope Examples (video)](https://www.youtube.com/watch?v=gRawd7CO-Q8)
-- [Flame Graphs](http://www.brendangregg.com/flamegraphs.html)
-- [Java in Flames](https://medium.com/netflix-techblog/java-in-flames-e763b3d32166)
-- [Subsecond-offset Heat Maps](http://www.brendangregg.com/HeatMaps/subsecondoffset.html)
-- [Linux perf kernel docs](https://github.com/torvalds/linux/tree/master/tools/perf/Documentation)
-- [Linux perf wiki](https://perf.wiki.kernel.org/index.php/Main_Page)
-- [Linux perf examples](http://www.brendangregg.com/perf.html)
