@@ -21,7 +21,7 @@ cd flamescope
 python3 -m venv env
 source ./env/bin/activate
 
-# Install libmagic
+# Apparently, this: https://github.com/Yelp/elastalert/issues/1927#issuecomment-549142662
 brew install libmagic
 
 pip3 install -r requirements.txt
@@ -30,9 +30,6 @@ python3 run.py
 
 I'd like to port some of this to the main-repo, but I don't have time. If you'd like to help, please feel free to upstream my changes.
 
-Credits to the following thread for figuring this out:
-
-- https://github.com/Yelp/elastalert/issues/1927#issuecomment-549142662
 
 ## The rest of the README
 
